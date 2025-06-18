@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leads Cars - Tek Sayfa</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            scroll-behavior: smooth; /* Dahili bağlantılar için yumuşak kaydırma */
+        }
+        .header-bg {
+            background-image: linear-gradient(to right, #0a0a0a, #1a1a1a);
+            border-bottom-left-radius: 50px;
+            border-bottom-right-radius: 50px;
+            position: sticky; /* Navigasyon için yapışkan başlık */
+            top: 0;
+            z-index: 1000;
+        }
+        .btn-primary {
+            background-color: #e53e3e;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #c53030;
+        }
+        .card {
+            background-color: #2d2d2d;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            cursor: pointer; /* Kartların tıklanabilir olduğunu belirtmek için */
+        }
+        .card-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-top-left-radius: 1.5rem;
+            border-top-right-radius: 1.5rem;
+        }
+        .nav-item {
+            position: relative;
+            padding: 0.5rem 0;
+            cursor: pointer;
+        }
+        .nav-item::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: #e53e3e;
+            transition: width 0.3s ease;
+        }
+        .nav-item:hover::after {
+            width: 100%;
+        }
+        /* Özel kaydırma çubuğu gizleme */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+
+        /* Carousel için kaydırma efekti */
+        .carousel-track {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+            scroll-snap-type: x mandatory; /* Kaydırma noktalarına yaslama */
+            -webkit-overflow-scrolling: touch; /* iOS üzerinde daha iyi kaydırma */
+        }
+        .carousel-item {
+            flex: 0 0 100%; /* Her öğe konteynerin tam genişliğini kaplar */
+            scroll-snap-align: start; /* Her öğeyi başlangıca yaslar */
+            padding: 0 1.5rem; /* Yan boşluklar (ana container ile hizalamak için) */
+            box-sizing: border-box; /* Padding'i genişliğe dahil et */
+        }
+
+        /* Ana fotoğrafın yüksekliği */
+        .main-car-image {
+            height: 350px; /* Büyük ana fotoğraf */
+            width: 100%; /* Genişlik tam olsun */
+            object-fit: cover;
+        }
+        /* Küçük fotoğraf galerisi için yükseklik */
+        .thumbnail-gallery img {
+            height: 100px; /* Daha küçük görseller */
+            object-fit: cover;
+        }
+
+        /* Sabit navigasyon butonları için yeni stil */
+        .fixed-carousel-nav {
+            position: fixed;
+            top: 50%; /* Dikeyde ortala */
+            transform: translateY(-50%); /* Kendi yüksekliğine göre ayarla */
+            z-index: 1050; /* Diğer her şeyin üzerinde olsun */
+        }
+
+        /* Lightbox (Modal) Stilleri */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain; /* Görüntünün çerçeveye sığmasını sağlar ve tam ekran olarak gösterir */
+        }
+        .modal-nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 1rem;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 2001;
+            transition: background-color 0.3s ease;
+        }
+        .modal-nav-btn:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+        .modal-nav-btn.left {
+            left: 1rem;
+        }
+        .modal-nav-btn.right {
+            right: 1rem;
+        }
+        .modal-close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            z-index: 2001;
+            transition: background-color 0.3s ease;
+        }
+        .modal-close-btn:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        /* Kart içeriği için minimum yükseklik ve flex düzeni */
+        .card .p-6 {
+            min-height: 200px; /* İçerik için yeterli alan bırakarak butonun kaymasını engeller */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Butonu en alta iter */
+        }
+        .card .p-6 a {
+            margin-top: auto; /* Flex container içinde butonu en alta itmek için */
+        }
+
+        /* Mobile Menu Overlay Styles */
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000000; /* Siyah arka plan */
+            z-index: 1001; /* Header'dan daha yüksek */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+
+        .mobile-menu-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .mobile-nav-item {
+            padding: 1rem 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .mobile-nav-item:hover {
+            color: #e53e3e; /* Hover rengi */
+        }
+
+        /* Mobil menüdeki 'Online Rezervasyon' butonu için özel stil ayarlamaları */
+        .mobile-nav-item.btn-primary {
+            padding: 0.5rem 1rem; /* Daha küçük dolgu */
+            font-size: 1.25rem; /* Daha küçük yazı tipi */
+            white-space: normal; /* Metnin sığmadığında alt satıra geçmesini sağlar */
+            text-align: center; /* Metni ortalar */
+            width: 80%; /* Belirgin bir genişlik verir */
+            max-width: 300px; /* Maksimum genişliği sınırlar */
+            margin-top: 1.5rem; /* Üst boşluk */
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <header class="header-bg py-4 px-6 md:px-12 lg:px-24">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-car text-red-500 text-2xl"></i>
+                <span class="text-xl font-bold">Leads Cars</span>
+            </div>
+            <nav class="hidden md:flex items-center space-x-8 text-sm font-semibold">
+                <a href="#home" class="nav-item">Ana Sayfa</a>
+                <a href="#about-us" class="nav-item">Kurumsal</a>
+                <a href="#" class="nav-item">Markalar</a>
+                <a href="#contact" class="nav-item">İletişim</a>
+                <a href="#car-details" class="nav-item">Araba Detay</a>
+            </nav>
+            <div class="flex items-center space-x-6">
+                <!-- Arama ve Sepet ikonları kaldırıldı -->
+                <a href="https://wa.me/905XXXXXXXXX?text=Merhaba,%20Online%20Rezervasyon%20hakkında%20bilgi%20almak%20istiyorum." target="_blank" class="btn-primary hidden md:block">Online Rezervasyon</a>
+                <button id="mobile-menu-toggle" class="md:hidden text-2xl">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <section id="home" class="relative w-full h-[600px] flex items-center justify-center overflow-hidden">
+        <img src="https://i.gifer.com/97RB.gif"
+             alt="Hareketli Arka Plan"
+             class="absolute inset-0 w-full h-full object-cover">
+        <div class="absolute inset-0 bg-black opacity-50 z-0"></div>
+
+        <div class="relative z-10 text-center text-white px-6">
+            <h1 class="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight drop-shadow-lg">Hayalinizdeki Süper Arabayı Keşfedin</h1>
+            <a href="#car-listing" class="mt-8 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-8 rounded-full inline-flex items-center justify-center transition duration-300">
+                Şimdi Arabaları İncele <i class="fas fa-arrow-right ml-2"></i>
+            </a>
+        </div>
+    </section>
+
+    <section class="container mx-auto mt-10 md:mt-20 px-6 md:px-12 lg:px-24">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            <div class="p-4 rounded-xl">
+                <div class="text-2xl font-bold text-red-500">200</div>
+                <div class="text-gray-400">Üretim</div>
+            </div>
+            <div class="p-4 rounded-xl">
+                <div class="text-2xl font-bold text-red-500">300</div>
+                <div class="text-gray-400">Segment</div>
+            </div>
+            <div class="p-4 rounded-xl">
+                <div class="text-2xl font-bold text-red-500">4.0 km</div>
+                <div class="text-gray-400">Rotamız</div>
+            </div>
+            <div class="p-4 rounded-xl">
+                <div class="text-2xl font-bold text-red-500">300 km</div>
+                <div class="text-gray-400">En Yüksek Güç</div>
+            </div>
+        </div>
+    </section>
+
+    <section id="car-listing" class="container mx-auto mt-10 md:mt-20 px-6 md:px-12 lg:px-24">
+        <div class="flex flex-wrap items-center justify-center md:justify-between mb-8 space-y-4 md:space-y-0">
+            <h2 class="text-3xl font-bold mr-4">Arabalar</h2>
+            </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="card" data-car-index="0">
+                <img src="https://m.atcdn.co.uk/a/media/w600/cdc9f923bf6f481aac6db48726cc6d46.jpg" alt="Audi" class="card-image">
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-2">Audi</h3>
+                    <ul class="text-sm text-gray-400 space-y-1 mb-4">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> 2.5 T 305 km</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Benzin</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Manuel</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Spor</li>
+                    </ul>
+                    <a href="#car-details" class="w-full block text-center bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-full transition duration-300">İncele</a>
+                </div>
+            </div>
+
+            <div class="card" data-car-index="1">
+                <img src="https://m.atcdn.co.uk/a/media/w600/67425bb8527b46878d5487b5a90600fd.jpg" alt="Porshe" class="card-image">
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-2">Porsche</h3>
+                    <ul class="text-sm text-gray-400 space-y-1 mb-4">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> 2.5 T 305 km</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Benzin</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Manuel</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Spor</li>
+                    </ul>
+                    <a href="#car-details" class="w-full block text-center bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-full transition duration-300">İncele</a>
+                </div>
+            </div>
+
+            <div class="card" data-car-index="2">
+                <img src="https://m.atcdn.co.uk/a/media/w600/ac30ac6ed0154e4b98b5516e1521632f.jpg" alt="Ford" class="card-image">
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-2">Ford</h3>
+                    <ul class="text-sm text-gray-400 space-y-1 mb-4">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> 2.5 T 305 km</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Benzin</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Manuel</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Spor</li>
+                    </ul>
+                    <a href="#car-details" class="w-full block text-center bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-full transition duration-300">İncele</a>
+                </div>
+            </div>
+
+            <div class="card" data-car-index="3">
+                <img src="https://m.atcdn.co.uk/a/media/w600/a2e429f9dbb74953a434969056aa5202.jpg" alt="Alfa Romeo" class="card-image">
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-2">Alfa Romeo</h3>
+                    <ul class="text-sm text-gray-400 space-y-1 mb-4">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> 2.5 T 305 km</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Benzin</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Manuel</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Spor</li>
+                    </ul>
+                    <a href="#car-details" class="w-full block text-center bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-full transition duration-300">İncele</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="about-us" class="container mx-auto mt-10 md:mt-20 px-6 md:px-12 lg:px-24 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold mb-8">Hakkımızda</h1>
+        <div class="max-w-4xl mx-auto text-lg text-gray-300 leading-relaxed">
+            <p class="mb-6">
+                Leads Cars olarak, otomotiv tutkusunu ve lüks deneyimi bir araya getiriyoruz. Uzun yıllara dayanan deneyimimiz ve müşteri odaklı yaklaşımımızla, her zaman en yüksek kalite standartlarını ve müşteri memnuniyetini hedefliyoruz. Amacımız, müşterilerimize sadece bir araç değil, aynı zamanda eşsiz bir sürüş deneyimi ve prestij sunmaktır.
+            </p>
+            <p class="mb-6">
+                Misyonumuz, yenilikçi çözümler ve üstün hizmet anlayışımızla sektörde lider konumumuzu pekiştirmek, süper araba tutkunlarının hayallerini gerçeğe dönüştürmektir. Vizyonumuz ise, geleceğin otomotiv dünyasına yön veren, çevre dostu ve ileri teknoloji araçları portföyümüze dahil ederek sürdürülebilir bir gelecek inşa etmektir.
+            </p>
+            <p>
+                Ekibimiz, otomotiv sektörüne tutkuyla bağlı, alanında uzman ve deneyimli profesyonellerden oluşmaktadır. Her bir çalışanımız, sizlere en iyi hizmeti sunmak için sürekli olarak kendilerini geliştirmekte ve bilgi birikimlerini artırmaktadır. Siz de Leads Cars ailesine katılarak, ayrıcalıklı bir dünyanın kapılarını aralayın.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
+            <div class="bg-gray-800 p-8 rounded-xl shadow-lg">
+                <i class="fas fa-gem text-red-500 text-4xl mb-4"></i>
+                <h3 class="text-2xl font-semibold mb-2">Misyonumuz</h3>
+                <p class="text-gray-400">Müşterilerimize en üst düzeyde lüks ve performans sunarak, süper araba deneyimini yeniden tanımlamak.</p>
+            </div>
+            <div class="bg-gray-800 p-8 rounded-xl shadow-lg">
+                <i class="fas fa-eye text-red-500 text-4xl mb-4"></i>
+                <h3 class="text-2xl font-semibold mb-2">Vizyonumuz</h3>
+                <p class="text-gray-400">Otomotiv sektöründe inovasyon ve müşteri memnuniyetinde küresel bir lider olmak.</p>
+            </div>
+            <div class="bg-gray-800 p-8 rounded-xl shadow-lg">
+                <i class="fas fa-users text-red-500 text-4xl mb-4"></i>
+                <h3 class="text-2xl font-semibold mb-2">Ekibimiz</h3>
+                <p class="text-gray-400">Tutkulu, deneyimli ve her zaman mükemmeli hedefleyen bir profesyonel kadro.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="car-details" class="container mx-auto mt-10 md:mt-20">
+        <h2 class="text-4xl md:text-5xl font-bold mb-8 text-center px-6 md:px-12 lg:px-24">Araba Detayları</h2>
+        <div class="relative overflow-hidden w-full">
+            <div id="carousel-track" class="carousel-track">
+                </div>
+
+            <button id="prev-car" class="absolute left-0 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-75 text-white p-3 rounded-full shadow-lg z-10 hover:bg-opacity-100 transition-all ml-2">
+                <i class="fas fa-chevron-left text-2xl"></i>
+            </button>
+            <button id="next-car" class="absolute right-0 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-75 text-white p-3 rounded-full shadow-lg z-10 hover:bg-opacity-100 transition-all mr-2">
+                <i class="fas fa-chevron-right text-2xl"></i>
+            </button>
+        </div>
+    </section>
+
+    <section id="contact" class="container mx-auto mt-10 md:mt-20 px-6 md:px-12 lg:px-24 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold mb-8">İletişim</h1>
+        <div class="max-w-4xl mx-auto text-lg text-gray-300 leading-relaxed">
+            <p class="mb-6">
+                Her türlü soru, görüş ve önerileriniz için bizimle iletişime geçmekten çekinmeyin. Ekibimiz size en kısa sürede yardımcı olacaktır.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-16">
+            <div class="bg-gray-800 p-8 rounded-xl shadow-lg">
+                <i class="fas fa-map-marker-alt text-red-500 text-4xl mb-4"></i>
+                <h3 class="text-2xl font-semibold mb-2">Adresimiz</h3>
+                <p class="text-gray-400">Örnek Mah. Örnek Cad. No: 123, Örnek Şehir, Ülke</p>
+            </div>
+            <div class="bg-gray-800 p-8 rounded-xl shadow-lg">
+                <i class="fas fa-envelope text-red-500 text-4xl mb-4"></i>
+                <h3 class="text-2xl font-semibold mb-2">E-posta</h3>
+                <p class="text-gray-400">info@leadscars.com</p>
+            </div>
+            <div class="bg-gray-800 p-8 rounded-xl shadow-lg">
+                <i class="fas fa-phone-alt text-red-500 text-4xl mb-4"></i>
+                <h3 class="text-2xl font-semibold mb-2">Telefon</h3>
+                <p class="text-gray-400">+90 123 456 7890</p>
+            </div>
+            <div class="bg-gray-800 p-8 rounded-xl shadow-lg">
+                <i class="fas fa-clock text-red-500 text-4xl mb-4"></i>
+                <h3 class="text-2xl font-semibold mb-2">Çalışma Saatleri</h3>
+                <p class="text-400">Hafta içi: 09:00 - 18:00</p>
+                <p class="text-gray-400">Hafta sonu: Kapalı</p>
+            </div>
+        </div>
+
+        <form class="mt-16 max-w-2xl mx-auto bg-gray-800 p-8 rounded-xl shadow-lg text-left">
+            <h3 class="text-2xl font-semibold mb-6 text-red-500 text-center">Bize Yazın</h3>
+            <div class="mb-4">
+                <label for="name" class="block text-gray-300 text-sm font-bold mb-2">Adınız Soyadınız:</label>
+                <input type="text" id="name" name="name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-700 border-gray-600 text-white" placeholder="Adınız Soyadınız">
+            </div>
+            <div class="mb-4">
+                <label for="email" class="block text-gray-300 text-sm font-bold mb-2">E-posta Adresiniz:</label>
+                <input type="email" id="email" name="email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-700 border-gray-600 text-white" placeholder="email@example.com">
+            </div>
+            <div class="mb-6">
+                <label for="message" class="block text-gray-300 text-sm font-bold mb-2">Mesajınız:</label>
+                <textarea id="message" name="message" rows="5" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-700 border-gray-600 text-white" placeholder="Mesajınızı buraya yazın..."></textarea>
+            </div>
+            <div class="flex items-center justify-center">
+                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-8 rounded-full transition duration-300">
+                    Mesaj Gönder
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <footer class="bg-gray-800 text-gray-400 py-8 mt-20">
+        <div class="container mx-auto text-center text-sm">
+            <p>&copy; 2025 Leads Cars. Tüm hakları saklıdır.</p>
+            <p class="mt-2">Gök&Ar Tarafından Sağlanmıştır: <a href="https://gok-ar.vercel.app" target="_blank" class="text-red-500 hover:underline">gok-ar.vercel.app</a></p>
+        </div>
+    </footer>
+
+    <div id="image-modal" class="modal-overlay">
+        <div class="modal-content">
+            <img id="modal-image-display" src="" alt="Büyük Görsel">
+            <button id="modal-prev-img" class="modal-nav-btn left">
+                <i class="fas fa-chevron-left text-2xl"></i>
+            </button>
+            <button id="modal-next-img" class="modal-nav-btn right">
+                <i class="fas fa-chevron-right text-2xl"></i>
+            </button>
+            <button id="modal-close-btn" class="modal-close-btn">
+                <i class="fas fa-times"></i> Kapat
+            </button>
+        </div>
+    </div>
+
+    <div id="mobile-menu-overlay" class="mobile-menu-overlay">
+        <button id="close-mobile-menu" class="absolute top-6 right-6 text-white text-3xl focus:outline-none">
+            <i class="fas fa-times"></i>
+        </button>
+        <nav class="flex flex-col items-center space-y-6">
+            <a href="#home" class="mobile-nav-item">Ana Sayfa</a>
+            <a href="#about-us" class="mobile-nav-item">Kurumsal</a>
+            <a href="#" class="mobile-nav-item">Markalar</a>
+            <a href="#contact" class="mobile-nav-item">İletişim</a>
+            <a href="#car-details" class="mobile-nav-item">Araba Detay</a>
+            <a href="https://wa.me/905XXXXXXXXX?text=Merhaba,%20Online%20Rezervasyon%20hakkında%20bilgi%20almak%20istiyorum." target="_blank" class="mobile-nav-item btn-primary mt-8">Online Rezervasyon</a>
+        </nav>
+    </div>
+
+    <script>
+        // Helper function to convert w1024 URL to w300 thumbnail URL
+        function toThumbnailUrl(url) {
+            return url.replace('/w1024/', '/w300/');
+        }
+
+        // Arabaların verisi
+        const cars = [
+            {
+                name: "Audi RS7 Sportback",
+                mainImageThumbnail: "https://m.atcdn.co.uk/a/media/w600/cdc9f923bf6f481aac6db48726cc6d46.jpg",
+                mainImageFull: "https://m.atcdn.co.uk/a/media/w1024/cdc9f923bf6f481aac6db48726cc6d46.jpg",
+                thumbnails: [
+                    "https://m.atcdn.co.uk/a/media/w300/a98d944111b84832894a0ece2c9b4a96.jpg",
+                    "https://m.atcdn.co.uk/a/media/w300/0fb539a2b19f4e909f7e2b8042fed7dd.jpg",
+                    "https://m.atcdn.co.uk/a/media/w300/2e021188d8464c76b22fdf002a0a89b1.jpg",
+                    "https://m.atcdn.co.uk/a/media/w300/4a78a6c2a3f04e90b054f6f5c242eb1c.jpg",
+                    "https://m.atcdn.co.uk/a/media/w300/cb909ad4740847fca383a9d9f4e9b7c9.jpg",
+                    "https://m.atcdn.co.uk/a/media/w300/77313eb34a3242729acdbbb7abb66e8e.jpg"
+                ],
+                fullImages: [
+                    "https://m.atcdn.co.uk/a/media/w1024/a98d944111b84832894a0ece2c9b4a96.jpg",
+                    "https://m.atcdn.co.uk/a/media/w1024/0fb539a2b19f4e909f7e2b8042fed7dd.jpg",
+                    "https://m.atcdn.co.uk/a/media/w1024/2e021188d8464c76b22fdf002a0a89b1.jpg",
+                    "https://m.atcdn.co.uk/a/media/w1024/4a78a6c2a3f04e90b054f6f5c242eb1c.jpg",
+                    "https://m.atcdn.co.uk/a/media/w1024/cb909ad4740847fca383a9d9f4e9b7c9.jpg",
+                    "https://m.atcdn.co.uk/a/media/w1024/77313eb34a3242729acdbbb7abb66e8e.jpg"
+                ],
+                description: "Mühendislik harikası ve nefes kesen performansın mükemmel birleşimi. Audi RS7 Sportback, dinamik sürüş keyfi ile lüks konforu bir arada sunar.",
+                features: [
+                    { icon: "fas fa-tachometer-alt", text: "0-100 km/s: 3.6 saniye" },
+                    { icon: "fas fa-horse-head", text: "Beygir Gücü: 600 HP" },
+                    { icon: "fas fa-gas-pump", text: "Motor: 4.0L V8 Çift Turbo" },
+                    { icon: "fas fa-cogs", text: "Şanzınan: 8 İleri Tiptronic" },
+                    { icon: "fas fa-road", text: "Azami Hız: 305 km/s (Opsiyonel)" }
+                ],
+                specs: {
+                    engine: [
+                        { label: "Silindir Hacmi", value: "3996 cm³" },
+                        { label: "Sıkıştırma Oranı", value: "10.0:1" },
+                        { label: "Tork", value: "800 Nm @ 2050-4500 rpm" },
+                        { label: "Yakıt Tüketimi (Ortalama)", value: "11.7 L/100 km" }
+                    ],
+                    dimensions: [
+                        { label: "Uzunluk", value: "5012 mm" },
+                        { label: "Genişlik", value: "1950 mm" },
+                        { label: "Yükseklik", value: "1451 mm" },
+                        { label: "Boş Ağırlık", value: "2140 kg" },
+                        { label: "Bagaj Hacmi", value: "535 Litre" }
+                    ],
+                    chassis: [
+                        { label: "Ön Süspansiyon", value: "Beş Bağlantılı Aks" },
+                        { label: "Arka Süspansiyon", value: "Beş Bağlantılı Aks" },
+                        { label: "Frenler", value: "Havalandırmalı Disk (Ön/Arka)" },
+                        { label: "Lastik Boyutları", value: "275/35 R21" }
+                    ]
+                },
+                price: "4.500.000 TL"
+            },
+            {
+                name: "Porsche 911 GT3",
+                mainImageThumbnail: "https://m.atcdn.co.uk/a/media/w600/7272b69642ef41dbbcd033d93f8031fa.jpg",
+                mainImageFull: "https://m.atcdn.co.uk/a/media/w1024/7272b69642ef41dbbcd033d93f8031fa.jpg",
+                thumbnails: [
+                    toThumbnailUrl("https://m.atcdn.co.uk/a/media/w1024/7272b69642ef41dbbcd033d93f8031fa.jpg"),
+                    toThumbnailUrl("https://m.atcdn.co.uk/a/media/w1024/46d82beb11f144ae805ca5c941b7a991.jpg"),
+                    toThumbnailUrl("https://m.atcdn.co.uk/a/media/w1024/50e1186bc6654368ad1a5e7a595f6060.jpg"),
+                    toThumbnailUrl("https://m.atcdn.co.uk/a/media/w1024/b5b09d08eac449898595457330ed0678.jpg")
+                ],
+                fullImages: [
+                    "https://m.atcdn.co.uk/a/media/w1024/7272b69642ef41dbbcd033d93f8031fa.jpg",
+                    "https://m.atcdn.co.uk/a/media/w1024/46d82beb11f144ae805ca5c941b7a991.jpg",
+                    "https://m.atcdn.co.uk/a/media/w1024/50e1186bc6654368ad1a5e7a595f6060.jpg",
+                    "https://m.atcdn.co.uk/a/media/w1024/b5b09d08eac449898595457330ed0678.jpg"
+                ],
+                description: "Pist performansı için doğmuş, sokaklar için evcilleştirilmiş. Porsche 911 GT3, saf sürüş hazzı ve eşsiz yol tutuşu sunar.",
+                features: [
+                    { icon: "fas fa-tachometer-alt", text: "0-100 km/s: 3.4 saniye" },
+                    { icon: "fas fa-horse-head", text: "Beygir Gücü: 510 HP" },
+                    { icon: "fas fa-gas-pump", text: "Motor: 4.0L Düz Altı" },
+                    { icon: "fas fa-cogs", text: "Şanzıman: 7 İleri PDK" },
+                    { icon: "fas fa-road", text: "Azami Hız: 318 km/s" }
+                ],
+                specs: {
+                    engine: [
+                        { label: "Silindir Hacmi", value: "3996 cm³" },
+                        { label: "Sıkıştırma Oranı", value: "13.3:1" },
+                        { label: "Tork", value: "470 Nm @ 6100 rpm" },
+                        { label: "Yakıt Tüketimi (Ortalama)", value: "12.4 L/100 km" }
+                    ],
+                    dimensions: [
+                        { label: "Uzunluk", value: "4573 mm" },
+                        { label: "Genişlik", value: "1852 mm" },
+                        { label: "Yükseklik", value: "1279 mm" },
+                        { label: "Boş Ağırlık", value: "1435 kg" },
+                        { label: "Bagaj Hacmi", value: "132 Litre" }
+                    ],
+                    chassis: [
+                        { label: "Ön Süspansiyon", value: "MacPherson Gergi Kolları" },
+                        { label: "Arka Süspansiyon", value: "Çok Bağlantılı Aks" },
+                        { label: "Frenler", value: "Seramik Kompozit Disk" },
+                        { label: "Lastik Boyutları", value: "Ön: 255/35 ZR20, Arka: 315/30 ZR21" }
+                    ]
+                },
+                price: "7.200.000 TL"
+            },
+            {
+                name: "Ford Mustang Shelby GT500",
+                mainImageThumbnail: "https://m.atcdn.co.uk/a/media/w600/8a234f37711443db895b74d56d4ea76a.jpg",
+                mainImageFull: "https://m.atcdn.co.uk/a/media/w1024/8a234f37711443db895b74d56d4ea76a.jpg",
+                thumbnails: [
+                    toThumbnailUrl("https://m.atcdn.co.uk/a/media/w1024/8a234f37711443db895b74d56d4ea76a.jpg"),
+                    toThumbnailUrl("https://m.atcdn.co.uk/a/media/w1024/f2c2ca5d30a94786a218dffbb9fc9b7e.jpg"),
+                    toThumbnailUrl("https://m.atcdn.co.uk/a/media/w1024/820921f24ef9466895a94af97bef2b3d.jpg")
+                ],
+                fullImages: [
+                    "https://m.atcdn.co.uk/a/media/w1024/8a234f37711443db895b74d56d4ea76a.jpg",
+                    "https://m.atcdn.co.uk/a/media/w1024/f2c2ca5d30a94786a218dffbb9fc9b7e.jpg",
+                    "https://m.atcdn.co.uk/a/media/w1024/820921f24ef9466895a94af97bef2b3d.jpg"
+                ],
+                description: "Amerikan gücünün ve kasının zirvesi. Shelby GT500, yol ve pist için tasarlanmış eşsiz bir performans sunar.",
+                features: [
+                    { icon: "fas fa-tachometer-alt", text: "0-100 km/s: 3.5 saniye" },
+                    { icon: "fas fa-horse-head", text: "Beygir Gücü: 760 HP" },
+                    { icon: "fas fa-gas-pump", text: "Motor: 5.2L Süperşarjlı V8" },
+                    { icon: "fas fa-cogs", text: "Şanzıman: 7 İleri Tremec DCT" },
+                    { icon: "fas fa-road", text: "Azami Hız: 290 km/s" }
+                ],
+                specs: {
+                    engine: [
+                        { label: "Silindir Hacmi", value: "5163 cm³" },
+                        { label: "Sıkıştırma Oranı", value: "9.5:1" },
+                        { label: "Tork", value: "847 Nm @ 5000 rpm" },
+                        { label: "Yakıt Tüketimi (Ortalama)", value: "15.7 L/100 km" }
+                    ],
+                    dimensions: [
+                        { label: "Uzunluk", value: "4818 mm" },
+                        { label: "Genişlik", value: "1956 mm" },
+                        { label: "Yükseklik", value: "1379 mm" },
+                        { label: "Boş Ağırlık", value: "1890 kg" },
+                        { label: "Bagaj Hacmi", value: "383 Litre" }
+                    ],
+                    chassis: [
+                        { label: "Ön Süspansiyon", value: "MacPherson Gergi Kolları" },
+                        { label: "Arka Süspansiyon", value: "Bağımsız Çok Bağlantılı" },
+                        { label: "Frenler", value: "Brembo Havalandırmalı Disk" },
+                        { label: "Lastik Boyutları", value: "Ön: 305/30 R20, Arka: 315/30 R20" }
+                    ]
+                },
+                price: "3.800.000 TL"
+            },
+            {
+                name: "Alfa Romeo Giulia Quadrifoglio",
+                mainImageThumbnail: "https://m.atcdn.co.uk/a/media/w600/c6298bb42d2b4f26a0d2b8d8f4336137.jpg",
+                mainImageFull: "https://m.atcdn.co.uk/a/media/w1024/c6298bb42d2b4f26a0d2b8d8f4336137.jpg",
+                thumbnails: [
+                    toThumbnailUrl("https://m.atcdn.co.uk/a/media/w1024/c6298bb42d2b4f26a0d2b8d8f4336137.jpg"),
+                    toThumbnailUrl("https://m.atcdn.co.uk/a/media/w1024/4d7686e4ff4c411b872fc1950335e5bd.jpg"),
+                    toThumbnailUrl("https://m.atcdn.co.uk/a/media/w1024/8574ca5df330444fe952c19fe419ddfbe.jpg"), // Corrected URL
+                    toThumbnailUrl("https://m.atcdn.co.uk/a/media/w1024/51c4035aa42c4c3b9241d0c025e23869.jpg")
+                ],
+                fullImages: [
+                    "https://m.atcdn.co.uk/a/media/w1024/c6298bb42d2b4f26a0d2b8d8f4336137.jpg",
+                    "https://m.atcdn.co.uk/a/media/w1024/4d7686e4ff4c411b872fc1950335e5bd.jpg",
+                    "https://m.atcdn.co.uk/a/media/w1024/8574ca5df33044fe952c19fe419ddfbe.jpg", // Corrected URL
+                    "https://m.atcdn.co.uk/a/media/w1024/51c4035aa42c4c3b9241d0c025e23869.jpg"
+                ],
+                description: "Alfa Romeo'nun dinamik ve şık Giulia Quadrifoglio modeli, İtalyan tasarımını ve sürüş keyfini bir araya getiriyor.",
+                features: [
+                    { icon: "fas fa-tachometer-alt", text: "0-100 km/s: 3.9 saniye" },
+                    { icon: "fas fa-horse-head", text: "Beygir Gücü: 510 HP" },
+                    { icon: "fas fa-gas-pump", text: "Motor: 2.9L V6 Bi-Turbo" },
+                    { icon: "fas fa-cogs", text: "Şanzıman: 8 İleri Otomatik" },
+                    { icon: "fas fa-road", text: "Azami Hız: 307 km/s" }
+                ],
+                specs: {
+                    engine: [
+                        { label: "Silindir Hacmi", value: "2891 cm³" },
+                        { label: "Sıkıştırma Oranı", value: "9.3:1" },
+                        { label: "Tork", value: "600 Nm @ 2500-5000 rpm" },
+                        { label: "Yakıt Tüketimi (Ortalama)", value: "9.2 L/100 km" }
+                    ],
+                    dimensions: [
+                        { label: "Uzunluk", value: "4639 mm" },
+                        { label: "Genişlik", value: "1873 mm" },
+                        { label: "Yükseklik", value: "1426 mm" },
+                        { label: "Boş Ağırlık", value: "1524 kg" },
+                        { label: "Bagaj Hacmi", value: "480 Litre" }
+                    ],
+                    chassis: [
+                        { label: "Ön Süspansiyon", value: "Çift Salıncaklı" },
+                        { label: "Arka Süspansiyon", value: "Çok Bağlantılı" },
+                        { label: "Frenler", value: "Brembo Havalandırmalı Disk" },
+                        { label: "Lastik Boyutları", value: "Ön: 245/35 ZR19, Arka: 285/30 ZR19" }
+                    ]
+                },
+                price: "2.500.000 TL"
+            }
+        ];
+
+        let currentCarIndex = 0;
+        let carouselTrack;
+        let prevCarButton;
+        let nextCarButton;
+        let autoSlideInterval;
+        let carDetailsSection; // Araba detay bölümü referansı
+        let carListingSection; // Araba listeleme bölümü referansı
+
+        // Lightbox (Modal) değişkenleri
+        let modalOverlay;
+        let modalImageDisplay;
+        let modalPrevImgButton;
+        let modalNextImgButton;
+        let modalCloseButton;
+        let currentModalImageIndex = 0;
+        let currentModalCarImages = []; // Modalda gösterilecek tam boyutlu resimlerin listesi
+
+        // Mobile Menu değişkenleri
+        let mobileMenuToggle;
+        let mobileMenuOverlay;
+        let closeMobileMenu;
+        let mobileNavItems;
+
+        // Arabaları dinamik olarak oluştur
+        function renderCars() {
+            if (!carouselTrack) return;
+
+            carouselTrack.innerHTML = ''; // Mevcut içeriği temizle
+            cars.forEach((car, index) => {
+                const carItem = document.createElement('div');
+                carItem.className = 'carousel-item flex flex-col items-center w-full py-10';
+                carItem.setAttribute('data-index', index);
+
+                carItem.innerHTML = `
+                    <div class="w-full max-w-5xl"> <!-- Ana görsel ve küçük resim galerisi konteyneri -->
+                        <!-- Ana Araba Görseli -->
+                        <img src="${car.mainImageFull}" alt="${car.name} Ana Görsel" class="w-full main-car-image object-cover rounded-xl shadow-lg mb-6 cursor-pointer">
+
+                        <!-- Küçük Resim Galerisi -->
+                        <div class="grid grid-cols-3 gap-4 thumbnail-gallery">
+                            ${car.thumbnails.map(imgSrc => `<img src="${imgSrc}" alt="${car.name} Küçük Resim" class="w-full object-cover rounded-lg shadow-md cursor-pointer">`).join('')}
+                        </div>
+                    </div>
+
+                    <div class="w-full max-w-5xl flex flex-col lg:flex-row gap-8 mt-8"> <!-- Özellikler ve Teknik Özellikler konteyneri -->
+                        <!-- Temel Özellikler Kartı -->
+                        <div class="lg:w-1/2 bg-gray-800 p-4 rounded-xl shadow-lg">
+                            <h2 class="text-2xl font-semibold mb-3 text-red-500">Temel Özellikler</h2>
+                            <ul class="space-y-2 text-gray-300 text-sm">
+                                ${car.features.map(feature => `<li class="flex items-center"><i class="${feature.icon} mr-2 text-base"></i> ${feature.text}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <!-- Detaylı Teknik Özellikler Kartı -->
+                        <div class="lg:w-1/2 bg-gray-800 p-4 rounded-xl shadow-lg">
+                            <h2 class="text-2xl font-semibold mb-3 text-red-500">Detaylı Teknik Özellikler</h2>
+                            <div class="grid grid-cols-1 gap-3 text-gray-300 text-sm">
+                                <div>
+                                    <h3 class="text-xl font-semibold mb-1">Motor ve Performans</h3>
+                                    <ul class="space-y-1">
+                                        ${car.specs.engine.map(spec => `<li>${spec.label}: ${spec.value}</li>`).join('')}
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-semibold mb-1">Boyutlar ve Ağırlık</h3>
+                                    <ul class="space-y-1">
+                                        ${car.specs.dimensions.map(spec => `<li>${spec.label}: ${spec.value}</li>`).join('')}
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-semibold mb-1">Şasi ve Süspansiyon</h3>
+                                    <ul class="space-y-1">
+                                        ${car.specs.chassis.map(spec => `<li>${spec.label}: ${spec.value}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fiyat ve Rezervasyon Butonu -->
+                    <div class="w-full max-w-5xl bg-gray-800 p-5 rounded-xl shadow-lg mt-8">
+                        <h2 class="text-2xl font-semibold mb-4 text-red-500">Fiyat & Planlar</h2>
+                        <p class="text-3xl font-bold mb-2 text-white">Başlangıç Fiyatı: ${car.price}</p>
+                        <p class="text-lg text-gray-400 mb-4">Hayallerinizi Ertelemeyin!</p>
+                        <a href="https://wa.me/905XXXXXXXXX?text=Merhaba,%20${car.name}%20için%20fiyat%20teklifi%20almak%20veya%20rezervasyon%20yapmak%20istiyorum." target="_blank" class="w-full block text-center bg-red-600 hover:bg-red-700 text-white font-semibold py-4 px-8 rounded-full transition duration-300 text-lg">
+                            Fiyat Teklifi Al / Rezervasyon Yap
+                        </a>
+                        <p class="text-sm text-gray-500 mt-4">Daha fazla bilgi veya test sürüşü için bizimle iletişime geçin.</p>
+                    </div>
+                `;
+                carouselTrack.appendChild(carItem);
+            });
+            updateCarousel(); // Karusel oluşturulduktan sonra güncelle
+        }
+
+        function updateCarousel() {
+            if (!carouselTrack || carouselTrack.children.length === 0) return;
+
+            const itemWidth = carouselTrack.children[currentCarIndex].offsetWidth;
+            const offset = -currentCarIndex * itemWidth;
+            carouselTrack.style.transform = `translateX(${offset}px)`;
+        }
+
+        function showNextCar() {
+            currentCarIndex = (currentCarIndex + 1) % cars.length;
+            updateCarousel();
+        }
+
+        function showPrevCar() {
+            currentCarIndex = (currentCarIndex - 1 + cars.length) % cars.length;
+            updateCarousel();
+        }
+
+        // Otomatik kaydırmayı başlat ve durdur
+        function startAutoSlide() {
+            if (autoSlideInterval) {
+                clearInterval(autoSlideInterval);
+            }
+            autoSlideInterval = setInterval(showNextCar, 20000); // 20 saniye aralık
+        }
+
+        function stopAutoSlide() {
+            if (autoSlideInterval) {
+                clearInterval(autoSlideInterval);
+            }
+        }
+
+        // Yapışkan navigasyon butonlarını kontrol et
+        function handleScroll() {
+            if (!carDetailsSection || !prevCarButton || !nextCarButton) return;
+
+            const rect = carDetailsSection.getBoundingClientRect();
+            // carDetailsSection'ın tamamen görünümde olup olmadığını veya viewport'un üstüne yakın olup olmadığını kontrol et
+            const isCarDetailsInView = (rect.top <= window.innerHeight && rect.bottom >= 0);
+
+            if (isCarDetailsInView) {
+                // Butonları sabitle (fixed position) ve viewport kenarlarına hizala
+                prevCarButton.classList.add('fixed-carousel-nav', 'left-6', 'md:left-12', 'lg:left-24');
+                nextCarButton.classList.add('fixed-carousel-nav', 'right-6', 'md:right-12', 'lg:right-24');
+                // Absolute konumlandırma sınıflarını kaldır
+                prevCarButton.classList.remove('absolute', 'left-0');
+                nextCarButton.classList.remove('absolute', 'right-0');
+            } else {
+                // Butonları orijinal (absolute) konumlarına geri döndür
+                prevCarButton.classList.remove('fixed-carousel-nav', 'left-6', 'md:left-12', 'lg:left-24');
+                nextCarButton.classList.remove('fixed-carousel-nav', 'right-6', 'md:right-12', 'lg:right-24');
+                // Absolute konumlandırma sınıflarını ekle
+                prevCarButton.classList.add('absolute', 'left-0');
+                nextCarButton.classList.add('absolute', 'right-0');
+            }
+        }
+
+        // Lightbox (Modal) Fonksiyonları
+        function openModal(clickedImageSrc, carIdx) {
+            const car = cars[carIdx];
+            currentModalCarImages = [car.mainImageFull, ...car.fullImages];
+
+            // Tıklanan görselin tam boyutlu URL'sini bul
+            let imageToShowInModal = clickedImageSrc;
+            // Eğer tıklanan küçük resimse, fullImages dizisindeki karşılığını bul
+            // Önce mainImageThumbnail ile karşılaştır
+            if (clickedImageSrc === car.mainImageThumbnail) {
+                imageToShowInModal = car.mainImageFull;
+            } else {
+                // Sonra diğer thumbnails ile karşılaştır
+                const thumbnailIndex = car.thumbnails.indexOf(clickedImageSrc);
+                if (thumbnailIndex !== -1) {
+                    imageToShowInModal = car.fullImages[thumbnailIndex];
+                }
+            }
+            currentModalImageIndex = currentModalCarImages.indexOf(imageToShowInModal);
+            
+            modalImageDisplay.src = imageToShowInModal;
+            modalOverlay.classList.add('show');
+            document.body.style.overflow = 'hidden'; // Arka plan kaydırmayı durdur
+            stopAutoSlide(); // Ana karusel otomatik kaydırmayı durdur
+        }
+
+        function closeModal() {
+            modalOverlay.classList.remove('show');
+            document.body.style.overflow = ''; // Arka plan kaydırmayı etkinleştir
+            startAutoSlide(); // Ana karusel otomatik kaydırmayı yeniden başlat
+        }
+
+        function showNextModalImage() {
+            currentModalImageIndex = (currentModalImageIndex + 1) % currentModalCarImages.length;
+            modalImageDisplay.src = currentModalCarImages[currentModalImageIndex];
+        }
+
+        function showPrevModalImage() {
+            currentModalImageIndex = (currentModalImageIndex - 1 + currentModalCarImages.length) % currentModalCarImages.length;
+            modalImageDisplay.src = currentModalCarImages[currentModalImageIndex];
+        }
+
+        // DOM içeriği tamamen yüklendiğinde çalıştır
+        document.addEventListener('DOMContentLoaded', () => {
+            carouselTrack = document.getElementById('carousel-track');
+            prevCarButton = document.getElementById('prev-car');
+            nextCarButton = document.getElementById('next-car');
+            carDetailsSection = document.getElementById('car-details');
+            carListingSection = document.getElementById('car-listing');
+
+            // Lightbox (Modal) elementlerini al
+            modalOverlay = document.getElementById('image-modal');
+            modalImageDisplay = document.getElementById('modal-image-display');
+            modalPrevImgButton = document.getElementById('modal-prev-img');
+            modalNextImgButton = document.getElementById('modal-next-img');
+            modalCloseButton = document.getElementById('modal-close-btn');
+
+            // Mobile Menu elementlerini al
+            mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+            closeMobileMenu = document.getElementById('close-mobile-menu');
+            mobileNavItems = document.querySelectorAll('.mobile-nav-item');
+
+            // Arabaları başlangıçta oluştur
+            renderCars();
+
+            // Karusel Navigasyon Butonları Olay Dinleyicileri
+            if (prevCarButton) {
+                prevCarButton.addEventListener('click', () => {
+                    stopAutoSlide();
+                    showPrevCar();
+                    startAutoSlide();
+                });
+            }
+            if (nextCarButton) {
+                nextCarButton.addEventListener('click', () => {
+                    stopAutoSlide();
+                    showNextCar();
+                    startAutoSlide();
+                });
+            }
+
+            // Lightbox (Modal) Olay Dinleyicileri
+            if (modalCloseButton) modalCloseButton.addEventListener('click', closeModal);
+            if (modalPrevImgButton) modalPrevImgButton.addEventListener('click', showPrevModalImage);
+            if (modalNextImgButton) modalNextImgButton.addEventListener('click', showNextModalImage);
+            
+            // Görselin dışına tıklayarak modalı kapat
+            if (modalOverlay) {
+                modalOverlay.addEventListener('click', (e) => {
+                    if (e.target === modalOverlay) {
+                        closeModal();
+                    }
+                });
+            }
+
+            // Karusel içindeki görseller için tıklama olayı (Olay Yetkilendirmesi)
+            if (carouselTrack) {
+                carouselTrack.addEventListener('click', (event) => {
+                    const clickedImage = event.target.closest('img');
+                    if (clickedImage) {
+                        const carouselItem = clickedImage.closest('.carousel-item');
+                        if (carouselItem) {
+                            const carIndex = parseInt(carouselItem.getAttribute('data-index'));
+                            openModal(clickedImage.src, carIndex);
+                        }
+                    }
+                });
+            }
+
+            // Araba listeleme kartlarına tıklama olayı
+            if (carListingSection) {
+                carListingSection.addEventListener('click', (event) => {
+                    const clickedCard = event.target.closest('.card');
+                    if (clickedCard) {
+                        const cardCarName = clickedCard.querySelector('h3').textContent;
+                        const carIndexToNavigate = cars.findIndex(car => car.name.trim() === cardCarName.trim());
+
+                        if (carIndexToNavigate !== -1) {
+                            currentCarIndex = carIndexToNavigate;
+                            updateCarousel();
+
+                            if (carDetailsSection) {
+                                carDetailsSection.scrollIntoView({ behavior: 'smooth' });
+                            }
+                            stopAutoSlide();
+                            startAutoSlide();
+                        }
+                    }
+                });
+            }
+
+            // Mobile Menu Olay Dinleyicileri
+            if (mobileMenuToggle) {
+                mobileMenuToggle.addEventListener('click', () => {
+                    mobileMenuOverlay.classList.add('show');
+                    document.body.style.overflow = 'hidden'; // Kaydırmayı devre dışı bırak
+                });
+            }
+            if (closeMobileMenu) {
+                closeMobileMenu.addEventListener('click', () => {
+                    mobileMenuOverlay.classList.remove('show');
+                    document.body.style.overflow = ''; // Kaydırmayı etkinleştir
+                });
+            }
+            mobileNavItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    // Mobil menü öğelerine tıklandığında menüyü kapat
+                    mobileMenuOverlay.classList.remove('show');
+                    document.body.style.overflow = ''; // Kaydırmayı etkinleştir
+
+                    // Hedef bölüme kaydır (eğer bir anchor link ise)
+                    const href = item.getAttribute('href');
+                    if (href && href.startsWith('#')) {
+                        const targetElement = document.querySelector(href);
+                        if (targetElement) {
+                            targetElement.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    }
+                });
+            });
+
+
+            // Sayfa yüklendiğinde otomatik kaydırmayı başlat
+            startAutoSlide();
+
+            // Yapışkan butonları kontrol etmek için kaydırma olay dinleyicisi ekle
+            window.addEventListener('scroll', handleScroll);
+            handleScroll(); // Başlangıçtaki buton konumunu yüklemede ayarla
+        });
+
+        // Pencere yeniden boyutlandırıldığında karuseli güncelle ve otomatik kaydırmayı yeniden başlat
+        window.addEventListener('resize', () => {
+            updateCarousel();
+            stopAutoSlide();
+            startAutoSlide();
+            handleScroll(); // Yeniden boyutlandırmada buton konumunu güncelle
+        });
+    </script>
+</body>
+</html>
